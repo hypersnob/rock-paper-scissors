@@ -1,16 +1,15 @@
 "use client";
 
-import React, { useCallback, useState, useTransition } from "react";
+import React, { useCallback, useState, useTransition, useEffect } from "react";
 import { Game, Move } from "@/types";
 import Loader from "./Loader";
-import { useGame } from "@/lib/GameContext";
-import { getGameResult } from "@/lib/utils";
+import { getGameIdWithExpiry, getGameResult } from "@/lib/utils";
 import { Button } from "./Button";
 import CopyIcon from "@/icons/Copy.svg";
 import MoveSelector from "./MoveSelector";
 import ArrowIcon from "@/icons/Arrow.svg";
 import { toast } from "sonner";
-
+import ShareIcon from "@/icons/share.svg";
 type GameLoaderProps = {
   gameId: string;
 };
@@ -60,12 +59,14 @@ const GameLoader: React.FC<GameLoaderProps> = ({ gameId }) => {
   const [isPending, startTransition] = useTransition();
   const [game, setGame] = useState<Game>();
   const [error, setError] = useState<string | null>(null);
-
   const [move, setMove] = useState<Move>();
+  const [view, setView] = useState<"HOST" | "PLAYER" | null>(null);
 
-  const { gameId: gameIdFromContext, setGameId } = useGame();
-
-  const view = gameIdFromContext === gameId ? "HOST" : "PLAYER";
+  useEffect(() => {
+    // Determine view only on the client-side after mount
+    const hostExpiry = getGameIdWithExpiry(gameId);
+    setView(hostExpiry ? "HOST" : "PLAYER");
+  }, [gameId]);
 
   const getGameDataCallback = useCallback(async () => {
     return await getGameData(gameId);
@@ -80,7 +81,7 @@ const GameLoader: React.FC<GameLoaderProps> = ({ gameId }) => {
         setError(data.error);
         return;
       }
-      console.log(data);
+
       if (data.game) {
         setGame(data.game);
       }
@@ -100,7 +101,8 @@ const GameLoader: React.FC<GameLoaderProps> = ({ gameId }) => {
     });
   };
 
-  if (isPending) {
+  // Show loader while determining view or fetching game data
+  if (isPending || view === null) {
     return (
       <div className="flex justify-center">
         <Loader size="big" />
@@ -113,9 +115,7 @@ const GameLoader: React.FC<GameLoaderProps> = ({ gameId }) => {
       <div className="text-base-light text-center">
         <h1 className="text-5xl font-bold mb-6 md:mb-8">Game not found</h1>
         <p className="text-xl mb-4">Try one more time.</p>
-        <Button href="/" onClick={() => setGameId(null)}>
-          New game
-        </Button>
+        <Button href="/">New game</Button>
       </div>
     );
   }
@@ -130,9 +130,7 @@ const GameLoader: React.FC<GameLoaderProps> = ({ gameId }) => {
           {message}
         </h2>
         <p className="text-xl mb-4">Try one more time.</p>
-        <Button href="/" onClick={() => setGameId(null)}>
-          New game
-        </Button>
+        <Button href="/">New game</Button>
       </div>
     );
   }
@@ -153,19 +151,25 @@ const GameLoader: React.FC<GameLoaderProps> = ({ gameId }) => {
           {navigator.clipboard && (
             <button
               className="text-base-dark"
-              onClick={() =>
-                navigator.clipboard
-                  .writeText(url)
-                  .then(() => {
-                    toast.success("Link copied to clipboard");
-                  })
-                  .catch(() => {
-                    toast.error("Failed to copy link");
-                  })
-              }
+              onClick={() => {
+                if (navigator.canShare()) {
+                  navigator.share({ url }).catch(() => {
+                    toast.error("Failed to share link");
+                  });
+                } else {
+                  navigator.clipboard
+                    .writeText(url)
+                    .then(() => {
+                      toast.success("Link copied to clipboard");
+                    })
+                    .catch(() => {
+                      toast.error("Failed to copy link");
+                    });
+                }
+              }}
             >
               {navigator.canShare() ? (
-                "share"
+                <ShareIcon className="w-6 h-6" />
               ) : (
                 <CopyIcon className="w-6 h-6" />
               )}
@@ -193,29 +197,33 @@ const GameLoader: React.FC<GameLoaderProps> = ({ gameId }) => {
           </Button>
         </div>
         <div className="flex justify-center">
-          <Button href="/" onClick={() => setGameId(null)}>
-            New game
+          <Button href="/">New game</Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Ensure view is PLAYER before rendering player UI
+  if (view === "PLAYER") {
+    return (
+      <div className="text-base-light text-center">
+        <h1 className="text-3xl md:text-5xl font-bold mb-6 md:mb-8">
+          Let&apos;s play!
+        </h1>
+        <p className="text-xl mb-4">Make your choice and get game result.</p>
+        <MoveSelector move={move} updateMove={setMove} />
+        <div className="mt-6 md:mt-8">
+          <Button disabled={!move} onClick={handlePlay}>
+            <span className="flex items-center gap-2">Play</span>
+            {isPending ? <Loader /> : <ArrowIcon className="w-6 h-6" />}
           </Button>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="text-base-light text-center">
-      <h1 className="text-3xl md:text-5xl font-bold mb-6 md:mb-8">
-        Let&apos;s play!
-      </h1>
-      <p className="text-xl mb-4">Make your choice and get game result.</p>
-      <MoveSelector move={move} updateMove={setMove} />
-      <div className="mt-6 md:mt-8">
-        <Button disabled={!move} onClick={handlePlay}>
-          <span className="flex items-center gap-2">Play</span>
-          {isPending ? <Loader /> : <ArrowIcon className="w-6 h-6" />}
-        </Button>
-      </div>
-    </div>
-  );
+  // Fallback or should not happen if view logic is correct
+  return null;
 };
 
 export default GameLoader;

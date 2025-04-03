@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { GameProvider } from "@/lib/GameContext";
 import Header from "@/components/Header";
 import { Toaster } from "sonner";
 
@@ -14,6 +13,10 @@ const geistSans = Geist({
 export const metadata: Metadata = {
   title: "Rock Paper Scissors",
   description: "Interactive version of the classic game",
+  icons: {
+    icon: "/favicon.ico",
+  },
+  manifest: "/site.webmanifest",
 };
 
 export default async function RootLayout({
@@ -26,9 +29,9 @@ export default async function RootLayout({
       <body className={cn(geistSans.variable, "bg-base-dark h-screen")}>
         <Header />
         <main className="max-w-5xl mx-auto h-full flex flex-col justify-center py-10 px-8">
-          <GameProvider>{children}</GameProvider>
+          {children}
         </main>
-        <Toaster />
+        <Toaster position="bottom-center" />
       </body>
     </html>
   );

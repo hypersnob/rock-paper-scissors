@@ -4,14 +4,13 @@ import React, { useCallback, useState } from "react";
 import { GameRequest, Move } from "@/types";
 import MoveSelector from "@/components/MoveSelector";
 import { Button } from "@/components/Button";
-import { useGame } from "@/lib/GameContext";
 import ArrowIcon from "@/icons/Arrow.svg";
 import Loader from "@/components/Loader";
 import { useRouter } from "next/navigation";
+import { setGameIdWithExpiry } from "@/lib/utils";
 
 export default function Home() {
   const [move, setMove] = useState<Move>();
-  const { setGameId } = useGame();
   const router = useRouter();
   const [isPending, startTransition] = React.useTransition();
 
@@ -39,11 +38,11 @@ export default function Home() {
       }
 
       const { gameId } = await response.json();
-      setGameId(gameId);
+      setGameIdWithExpiry(gameId);
       router.push(`/${gameId}`);
       return gameId;
     });
-  }, [move, router, setGameId]);
+  }, [move, router]);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
