@@ -10,7 +10,7 @@ import MoveSelector from "./MoveSelector";
 import ArrowIcon from "@/icons/Arrow.svg";
 import { toast } from "sonner";
 import ShareIcon from "@/icons/share.svg";
-
+import ResultVideoPlayer from "./ResultVideoPlayer";
 type GameLoaderProps = {
   gameId: string;
 };
@@ -126,11 +126,11 @@ const GameLoader: React.FC<GameLoaderProps> = ({ gameId }) => {
 
     return (
       <div className="text-base-light text-center">
-        <h1 className="md:text-5xl font-bold mb-6 md:mb-8">{emoji}</h1>
-        <h2 className="text-3xl md:text-5xl font-bold mb-6 md:mb-8">
-          {message}
-        </h2>
-        <p className="text-xl mb-4">Try one more time.</p>
+        <h1 className="text-3xl md:text-5xl font-bold mb-6 md:mb-8">
+          {emoji} {message}
+        </h1>
+        <ResultVideoPlayer winner={game.winner} view={view} />
+        <p className="text-xl my-4">Try one more time.</p>
         <Button href="/">New game</Button>
       </div>
     );
