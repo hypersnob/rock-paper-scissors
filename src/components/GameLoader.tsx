@@ -4,12 +4,13 @@ import React, { useCallback, useState, useTransition, useEffect } from "react";
 import { Game, Move } from "@/types";
 import Loader from "./Loader";
 import { getGameIdWithExpiry, getGameResult } from "@/lib/utils";
-import { Button } from "./Button";
+import Button from "./Button";
 import CopyIcon from "@/icons/Copy.svg";
 import MoveSelector from "./MoveSelector";
 import ArrowIcon from "@/icons/Arrow.svg";
 import { toast } from "sonner";
 import ShareIcon from "@/icons/share.svg";
+
 type GameLoaderProps = {
   gameId: string;
 };

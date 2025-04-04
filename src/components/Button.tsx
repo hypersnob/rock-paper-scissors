@@ -63,4 +63,5 @@ const Button = ({
     </button>
   );
 };
-export { Button, buttonVariants };
+
+export default Button;

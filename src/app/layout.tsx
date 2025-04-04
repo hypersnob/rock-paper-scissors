@@ -10,16 +10,30 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
+const title = "Rock Paper Scissors";
+const description = "Make a move and send a link to your friends to play";
+
 export const metadata: Metadata = {
-  title: "Rock Paper Scissors",
-  description: "Interactive version of the classic game",
+  title,
+  description,
   icons: {
     icon: "/favicon.ico",
   },
   manifest: "/site.webmanifest",
+  openGraph: {
+    title,
+    description,
+    images: ["/opengraph-image.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: ["/twitter-image.png"],
+  },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

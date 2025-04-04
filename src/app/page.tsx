@@ -3,7 +3,7 @@
 import React, { useCallback, useState } from "react";
 import { GameRequest, Move } from "@/types";
 import MoveSelector from "@/components/MoveSelector";
-import { Button } from "@/components/Button";
+import Button from "@/components/Button";
 import ArrowIcon from "@/icons/Arrow.svg";
 import Loader from "@/components/Loader";
 import { useRouter } from "next/navigation";

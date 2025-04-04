@@ -1,3 +1,4 @@
+import React from "react";
 import LoaderIcon from "@/icons/Loader.svg";
 import { cn } from "@/lib/utils";
 
