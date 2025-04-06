@@ -31,7 +31,7 @@ const MoveButton: React.FC<React.PropsWithChildren<MoveButtonProps>> = ({
     onClick={onClick}
   >
     <Squircle className="absolute inset-0" />
-    <div className="relative">{children}</div>
+    <div className="relative text-base-dark w-2/3 h-2/3">{children}</div>
   </button>
 );
 
@@ -69,22 +69,22 @@ const MoveSelector: React.FC<MoveSelectorProps> = ({ updateMove, move }) => {
   return (
     <div className="grid grid-cols-2 grid-rows-2 md:grid-cols-4 md:grid-rows-1 gap-6 w-full">
       <MoveButton onClick={() => updateMove("ROCK")} isActive={move === "ROCK"}>
-        <RockImage className="w-20 h-20 md:w-40 md:h-40 text-base-dark  " />
+        <RockImage className="w-full h-full" />
       </MoveButton>
       <MoveButton
-        onClick={() => updateMove("PAPER")}
         isActive={move === "PAPER"}
+        onClick={() => updateMove("PAPER")}
       >
-        <PaperImage className="w-20 h-20 md:w-40 md:h-40 text-base-dark" />
+        <PaperImage className="w-full h-full" />
       </MoveButton>
       <MoveButton
-        onClick={() => updateMove("SCISSORS")}
         isActive={move === "SCISSORS"}
+        onClick={() => updateMove("SCISSORS")}
       >
-        <ScissorsImage className="w-20 h-20 md:w-40 md:h-40 text-base-dark" />
+        <ScissorsImage className="w-full h-full" />
       </MoveButton>
       <MoveButton onClick={handleShuffle} isHighlight>
-        <ShuffleIcon className="w-20 h-20 md:w-40 md:h-40 text-base-dark" />
+        <ShuffleIcon className="w-full h-full" />
       </MoveButton>
     </div>
   );

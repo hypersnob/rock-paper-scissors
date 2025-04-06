@@ -1,40 +1,26 @@
 "use client";
 
-import React, { useCallback, useState, useTransition, useEffect } from "react";
+import React, { useState, useTransition, useMemo, use } from "react";
+import { useRouter } from "next/navigation";
 import { Game, Move } from "@/types";
 import Loader from "./Loader";
-import { getGameIdWithExpiry, getGameResult } from "@/lib/utils";
+import { getGameIdWithExpiry, getGameResult, GifCase } from "@/lib/utils";
 import Button from "./Button";
 import CopyIcon from "@/icons/Copy.svg";
 import MoveSelector from "./MoveSelector";
 import ArrowIcon from "@/icons/Arrow.svg";
 import { toast } from "sonner";
 import ShareIcon from "@/icons/share.svg";
-import ResultVideoPlayer from "./ResultVideoPlayer";
+import { notFound } from "next/navigation";
+import ResultGif from "./ResultGif";
+
+type GameResponse =
+  | { game?: Game; error?: never }
+  | { game?: never; error?: string };
+
 type GameLoaderProps = {
-  gameId: string;
+  gamePromise: Promise<GameResponse>;
 };
-
-async function getGameData(
-  gameId: string
-): Promise<{ game?: Game; error?: string }> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/game/${gameId}`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_BEARER_TOKEN}`,
-      },
-    }
-  );
-
-  if (!response.ok) {
-    return { error: "Game not found" };
-  }
-
-  const data = await response.json();
-  return data;
-}
 
 async function playGame(gameId: string, move: Move) {
   const response = await fetch(
@@ -49,52 +35,37 @@ async function playGame(gameId: string, move: Move) {
   );
 
   if (!response.ok) {
-    return { error: "Game not found" };
+    return notFound();
   }
 
   const data = await response.json();
   return { game: data };
 }
 
-const GameLoader: React.FC<GameLoaderProps> = ({ gameId }) => {
+const GameLoader: React.FC<GameLoaderProps> = ({ gamePromise }) => {
   const [isPending, startTransition] = useTransition();
-  const [game, setGame] = useState<Game>();
-  const [error, setError] = useState<string | null>(null);
   const [move, setMove] = useState<Move>();
-  const [view, setView] = useState<"HOST" | "PLAYER" | null>(null);
+  const router = useRouter();
 
-  useEffect(() => {
-    // Determine view only on the client-side after mount
-    const hostExpiry = getGameIdWithExpiry(gameId);
-    setView(hostExpiry ? "HOST" : "PLAYER");
-  }, [gameId]);
+  const { game: initialGame, error } = use(gamePromise);
 
-  const getGameDataCallback = useCallback(async () => {
-    return await getGameData(gameId);
-  }, [gameId]);
+  const [game, setGame] = useState<Game | undefined>(initialGame);
 
-  React.useEffect(() => {
-    startTransition(async () => {
-      const data = await getGameDataCallback();
-
-      if (data.error) {
-        console.error(data.error);
-        setError(data.error);
-        return;
-      }
-
-      if (data.game) {
-        setGame(data.game);
-      }
-    });
-  }, [gameId, getGameDataCallback]);
+  const view = useMemo(() => {
+    if (error || !game) {
+      return "PLAYER";
+    }
+    const hostExpiry = getGameIdWithExpiry(game.id);
+    return hostExpiry ? "HOST" : "PLAYER";
+  }, [game, error]);
 
   const handlePlay = () => {
-    if (!move) {
+    if (!move || !game) {
       return;
     }
+
     startTransition(async () => {
-      playGame(gameId, move).then((data) => {
+      playGame(game.id, move).then((data) => {
         if (data.game) {
           setGame(data.game);
         }
@@ -102,42 +73,37 @@ const GameLoader: React.FC<GameLoaderProps> = ({ gameId }) => {
     });
   };
 
-  // Show loader while determining view or fetching game data
-  if (isPending || view === null) {
-    return (
-      <div className="flex justify-center">
-        <Loader size="big" />
-      </div>
-    );
-  }
-
   if (error) {
-    return (
-      <div className="text-base-light text-center">
-        <h1 className="text-5xl font-bold mb-6 md:mb-8">Game not found</h1>
-        <p className="text-xl mb-4">Try one more time.</p>
-        <Button href="/">New game</Button>
-      </div>
-    );
+    notFound();
   }
 
   if (game && game.winner) {
     const { message, emoji } = getGameResult(game.winner, view);
+    const result: GifCase =
+      game.winner === "DRAW"
+        ? "draw"
+        : game.winner === "HOST"
+        ? view === "HOST"
+          ? "success"
+          : "failure"
+        : view === "PLAYER"
+        ? "success"
+        : "failure";
 
     return (
       <div className="text-base-light text-center">
         <h1 className="text-3xl md:text-5xl font-bold mb-6 md:mb-8">
           {emoji} {message}
         </h1>
-        <ResultVideoPlayer winner={game.winner} view={view} />
         <p className="text-xl my-4">Try one more time.</p>
         <Button href="/">New game</Button>
+        <ResultGif gifCase={result} />
       </div>
     );
   }
 
   if (view === "HOST") {
-    const url = `${window.location.origin}/${gameId}`;
+    const url = `${window.location.origin}/${game?.id}`;
 
     return (
       <div className="text-base-light text-center">
@@ -179,21 +145,7 @@ const GameLoader: React.FC<GameLoaderProps> = ({ gameId }) => {
         </div>
         <p className="text-base-light text-xl mb-4">Allready sent?</p>
         <div className="flex justify-center mb-6">
-          <Button
-            variant="secondary"
-            onClick={() =>
-              getGameDataCallback()
-                .then((data) => {
-                  if (data.game) {
-                    setGame(data.game);
-                  }
-                })
-                .catch((error) => {
-                  console.error(error);
-                  toast.error("Failed to refresh game");
-                })
-            }
-          >
+          <Button variant="secondary" onClick={() => router.refresh()}>
             Refresh
           </Button>
         </div>
