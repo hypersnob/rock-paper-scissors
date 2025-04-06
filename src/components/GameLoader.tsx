@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition, useMemo, use } from "react";
 import { useRouter } from "next/navigation";
-import { Game, Move } from "@/types";
+import { Move } from "@/types";
 import Loader from "./Loader";
 import { getGameIdWithExpiry, getGameResult, GifCase } from "@/lib/utils";
 import Button from "./Button";
@@ -13,10 +13,7 @@ import { toast } from "sonner";
 import ShareIcon from "@/icons/share.svg";
 import { notFound } from "next/navigation";
 import ResultGif from "./ResultGif";
-
-type GameResponse =
-  | { game?: Game; error?: never }
-  | { game?: never; error?: string };
+import { GameResponse } from "@/app/[gameId]/page";
 
 type GameLoaderProps = {
   gamePromise: Promise<GameResponse>;
@@ -47,9 +44,7 @@ const GameLoader: React.FC<GameLoaderProps> = ({ gamePromise }) => {
   const [move, setMove] = useState<Move>();
   const router = useRouter();
 
-  const { game: initialGame, error } = use(gamePromise);
-
-  const [game, setGame] = useState<Game | undefined>(initialGame);
+  const { game, error } = use(gamePromise);
 
   const view = useMemo(() => {
     if (error || !game) {
@@ -67,7 +62,7 @@ const GameLoader: React.FC<GameLoaderProps> = ({ gamePromise }) => {
     startTransition(async () => {
       playGame(game.id, move).then((data) => {
         if (data.game) {
-          setGame(data.game);
+          router.refresh();
         }
       });
     });

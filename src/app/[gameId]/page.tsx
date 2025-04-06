@@ -1,6 +1,7 @@
 import React, { Suspense } from "react";
 import GameLoader from "@/components/GameLoader";
 import Loader from "@/components/Loader";
+import { Game } from "@/types";
 
 type GamePageProps = {
   params: Promise<{
@@ -8,7 +9,11 @@ type GamePageProps = {
   }>;
 };
 
-const fetchGame = async (gameId: string) => {
+export type GameResponse =
+  | { game?: Game; error?: never }
+  | { game?: never; error?: string };
+
+const fetchGame = async (gameId: string): Promise<GameResponse> => {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/game/${gameId}`,
     {
@@ -32,6 +37,8 @@ const fetchGame = async (gameId: string) => {
 export default async function GamePage({ params }: GamePageProps) {
   const { gameId } = await params;
 
+  const gamePromise = fetchGame(gameId);
+
   return (
     <Suspense
       fallback={
@@ -40,7 +47,7 @@ export default async function GamePage({ params }: GamePageProps) {
         </div>
       }
     >
-      <GameLoader gamePromise={fetchGame(gameId)} />
+      <GameLoader gamePromise={gamePromise} />
     </Suspense>
   );
 }
