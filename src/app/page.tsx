@@ -20,18 +20,15 @@ export default function Home() {
     }
 
     startTransition(async () => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/create`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_BEARER_TOKEN}`,
-          },
-          body: JSON.stringify({
-            host_move: move,
-          } as GameRequest),
-        }
-      );
+      const response = await fetch('/api/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          host_move: move,
+        } as GameRequest),
+      });
 
       if (!response.ok) {
         return null;

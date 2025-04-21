@@ -6,6 +6,7 @@ const description = "It's your turn to make a move";
 export const metadata: Metadata = {
   title,
   description,
+  metadataBase: new URL("https://hardrockpaperscissors.app"),
   openGraph: {
     title,
     description,

@@ -1,0 +1,41 @@
+import { NextRequest, NextResponse } from "next/server";
+import { Move } from "@/types";
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { gameId: string } }
+) {
+  try {
+    const { move } = (await request.json()) as { move: Move };
+    const gameId = params.gameId;
+
+    if (!move) {
+      return NextResponse.json({ error: "Move is required" }, { status: 400 });
+    }
+
+    const response = await fetch(`${process.env.API_URL}/play/${gameId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.API_BEARER_TOKEN}`,
+      },
+      body: JSON.stringify({ move }),
+    });
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: "Failed to play game" },
+        { status: response.status }
+      );
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Error playing game:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}

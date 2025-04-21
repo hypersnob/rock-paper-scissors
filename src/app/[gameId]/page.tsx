@@ -14,15 +14,8 @@ export type GameResponse =
   | { game?: never; error?: string };
 
 const fetchGame = async (gameId: string): Promise<GameResponse> => {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/game/${gameId}`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_BEARER_TOKEN}`,
-      },
-    }
-  ).catch((e) => {
+  const baseUrl = process.env.APP_URL || 'http://localhost:3000';
+  const response = await fetch(`${baseUrl}/api/game/${gameId}`).catch((e) => {
     console.error(e);
   });
 

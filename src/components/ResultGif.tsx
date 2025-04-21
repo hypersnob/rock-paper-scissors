@@ -1,13 +1,10 @@
 "use client";
 
 import { Gif } from "@giphy/react-components";
-import { GiphyFetch } from "@giphy/js-fetch-api";
 import { GifCase, getRandomGifForCase } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
 
 type GifType = React.ComponentProps<typeof Gif>["gif"];
-
-const giphyFetch = new GiphyFetch(process.env.NEXT_PUBLIC_GIPHY_API_KEY!);
 
 const ResultGif: React.FC<{ gifCase: GifCase }> = ({ gifCase }) => {
   const [gifData, setGifData] = useState<GifType | null>(null);
@@ -16,7 +13,13 @@ const ResultGif: React.FC<{ gifCase: GifCase }> = ({ gifCase }) => {
     const fetchGif = async () => {
       try {
         const gifId = getRandomGifForCase(gifCase);
-        const { data } = await giphyFetch.gif(gifId);
+        const response = await fetch(`/api/giphy/${gifId}`);
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch GIF');
+        }
+
+        const data = await response.json();
         setGifData(data);
       } catch (error) {
         console.error("Failed to fetch GIF:", error);
