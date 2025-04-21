@@ -19,8 +19,8 @@ type GameLoaderProps = {
   gamePromise: Promise<GameResponse>;
 };
 
-async function playGame(gameId: string, move: Move) {
-  const response = await fetch(`/api/play/${gameId}`, {
+async function playGame(id: string, move: Move) {
+  const response = await fetch(`/api/play/${id}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

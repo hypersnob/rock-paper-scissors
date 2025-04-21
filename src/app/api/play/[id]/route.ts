@@ -3,17 +3,17 @@ import { Move } from "@/types";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { gameId: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { move } = (await request.json()) as { move: Move };
-    const gameId = params.gameId;
+    const { id } = await params;
 
     if (!move) {
       return NextResponse.json({ error: "Move is required" }, { status: 400 });
     }
 
-    const response = await fetch(`${process.env.API_URL}/play/${gameId}`, {
+    const response = await fetch(`${process.env.API_URL}/play/${id}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -13,7 +13,7 @@ export async function GET(
         Authorization: `Bearer ${process.env.API_BEARER_TOKEN}`,
       },
     });
-    console.log("Response:", response);
+
     if (!response.ok) {
       return NextResponse.json(
         { error: "Game not found" },
