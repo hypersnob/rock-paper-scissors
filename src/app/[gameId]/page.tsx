@@ -11,16 +11,21 @@ type GamePageProps = {
 
 export type GameResponse =
   | { game?: Game; error?: never }
-  | { game?: never; error?: string };
+  | { game?: never; error?: string; status?: number };
 
 const fetchGame = async (gameId: string): Promise<GameResponse> => {
-  const baseUrl = process.env.APP_URL || 'http://localhost:3000';
-  const response = await fetch(`${baseUrl}/api/game/${gameId}`).catch((e) => {
+  const baseUrl = process.env.API_URL;
+  const response = await fetch(`${baseUrl}/game/${gameId}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${process.env.API_BEARER_TOKEN}`,
+    },
+  }).catch((e) => {
     console.error(e);
   });
 
   if (!response || response.status !== 200) {
-    return { error: "Game not found" };
+    return { error: "Game not found", status: response?.status };
   }
 
   const data = await response.json();
