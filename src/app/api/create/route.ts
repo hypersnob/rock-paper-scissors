@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     if (!response.ok) {
       return NextResponse.json(
         { error: "Failed to create game" },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     console.error("Error creating game:", error);
     return NextResponse.json(
       { error: "Failed to create game" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

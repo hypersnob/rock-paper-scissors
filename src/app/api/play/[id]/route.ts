@@ -3,7 +3,7 @@ import { Move } from "@/types";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { move } = (await request.json()) as { move: Move };
@@ -25,7 +25,7 @@ export async function POST(
     if (!response.ok) {
       return NextResponse.json(
         { error: "Failed to play game" },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -35,7 +35,7 @@ export async function POST(
     console.error("Error playing game:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

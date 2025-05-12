@@ -5,7 +5,7 @@ const giphyFetch = new GiphyFetch(process.env.GIPHY_API_KEY!);
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;

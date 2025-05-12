@@ -21,9 +21,9 @@ type GameLoaderProps = {
 
 async function playGame(id: string, move: Move) {
   const response = await fetch(`/api/play/${id}`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ move }),
   });
@@ -121,20 +121,14 @@ const GameLoader: React.FC<GameLoaderProps> = ({ gamePromise }) => {
             <button
               className="text-base-dark"
               onClick={() => {
-                if (navigator.canShare()) {
-                  navigator.share({ url }).catch(() => {
-                    toast.error("Failed to share link");
+                navigator.clipboard
+                  .writeText(url)
+                  .then(() => {
+                    toast.success("Link copied to clipboard");
+                  })
+                  .catch(() => {
+                    toast.error("Failed to copy link");
                   });
-                } else {
-                  navigator.clipboard
-                    .writeText(url)
-                    .then(() => {
-                      toast.success("Link copied to clipboard");
-                    })
-                    .catch(() => {
-                      toast.error("Failed to copy link");
-                    });
-                }
               }}
             >
               {navigator.canShare() ? (

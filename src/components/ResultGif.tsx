@@ -16,7 +16,7 @@ const ResultGif: React.FC<{ gifCase: GifCase }> = ({ gifCase }) => {
         const response = await fetch(`/api/giphy/${gifId}`);
 
         if (!response.ok) {
-          throw new Error('Failed to fetch GIF');
+          throw new Error("Failed to fetch GIF");
         }
 
         const data = await response.json();

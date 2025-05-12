@@ -8,7 +8,7 @@ const Loader: React.FC<{ size?: "default" | "big" }> = ({
   <LoaderIcon
     className={cn(
       "animate-spin",
-      size === "big" ? "w-12 h-12 text-base-light" : "w-6 h-6 text-base-dark"
+      size === "big" ? "w-12 h-12 text-base-light" : "w-6 h-6 text-base-dark",
     )}
   />
 );

@@ -26,7 +26,7 @@ const MoveButton: React.FC<React.PropsWithChildren<MoveButtonProps>> = ({
       isHighlight
         ? "text-accent hover:text-accent-light"
         : "text-base hover:text-base-light",
-      isActive && "text-base-light"
+      isActive && "text-base-light",
     )}
     onClick={onClick}
   >

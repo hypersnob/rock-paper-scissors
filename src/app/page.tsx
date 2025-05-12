@@ -20,10 +20,10 @@ export default function Home() {
     }
 
     startTransition(async () => {
-      const response = await fetch('/api/create', {
-        method: 'POST',
+      const response = await fetch("/api/create", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           host_move: move,

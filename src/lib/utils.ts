@@ -11,7 +11,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getGameResult(
   winner: WinnerType,
-  view: "HOST" | "PLAYER"
+  view: "HOST" | "PLAYER",
 ): { message: string; emoji: string } {
   if (winner === "DRAW") {
     return { message: "We have a tie", emoji: "🤷‍♂️" };
