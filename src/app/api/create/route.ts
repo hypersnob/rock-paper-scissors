@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error creating game:", error);
+    console.error("Error creating game:", error instanceof Error ? error.message : "An unknown error occurred");
     return NextResponse.json(
       { error: "Failed to create game" },
       { status: 500 },
