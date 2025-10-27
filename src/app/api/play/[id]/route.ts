@@ -32,7 +32,10 @@ export async function POST(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error playing game:", error instanceof Error ? error.message : "An unknown error occurred");
+    console.error(
+      "Error playing game:",
+      error instanceof Error ? error.message : "An unknown error occurred",
+    );
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
