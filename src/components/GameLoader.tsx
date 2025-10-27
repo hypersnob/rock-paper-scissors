@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition, use, useEffect } from "react";
+import React, { useState, useTransition, use } from "react";
 import { useRouter } from "next/navigation";
 import { Move } from "@/types";
 import Loader from "./Loader";
@@ -39,19 +39,16 @@ async function playGame(id: string, move: Move) {
 const GameLoader: React.FC<GameLoaderProps> = ({ gamePromise }) => {
   const [isPending, startTransition] = useTransition();
   const [move, setMove] = useState<Move>();
-  const [view, setView] = useState<"HOST" | "PLAYER" | "PENDING">("PENDING");
   const router = useRouter();
 
   const { game, error } = use(gamePromise);
 
-  useEffect(() => {
-    if (error || !game) {
-      setView("PLAYER");
-      return;
-    }
-    const hostExpiry = getGameIdWithExpiry(game.id);
-    setView(hostExpiry ? "HOST" : "PLAYER");
-  }, [game, error]);
+  const view =
+    error || !game
+      ? "PLAYER"
+      : getGameIdWithExpiry(game.id)
+        ? "HOST"
+        : "PLAYER";
 
   const handlePlay = () => {
     if (!move || !game) {
@@ -66,14 +63,6 @@ const GameLoader: React.FC<GameLoaderProps> = ({ gamePromise }) => {
       });
     });
   };
-
-  if (view === "PENDING") {
-    return (
-      <div className="flex justify-center">
-        <Loader size="big" />
-      </div>
-    );
-  }
 
   if (error) {
     notFound();

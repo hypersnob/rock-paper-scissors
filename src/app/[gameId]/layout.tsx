@@ -1,3 +1,4 @@
+import React from "react";
 import { Metadata } from "next";
 
 const title = "Let's play Rock Paper Scissors!";
