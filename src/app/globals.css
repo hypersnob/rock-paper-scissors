@@ -1,10 +1,36 @@
 @import "tailwindcss";
 
-@theme {
+@theme inline {
   --color-base-dark: #0f1324;
   --color-base: #7a87b8;
   --color-base-light: #dee1ed;
   --color-accent: #f2c40d;
   --color-accent-light: #f8dc6d;
   --color-accent-deactivated: #857847;
+  --font-sans:
+    -apple-system, "system-ui", "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --font-display: var(--font-nunito), display;
+}
+
+body {
+  @apply font-sans;
+}
+
+.editable {
+  --s: 0.1em; /* control the size of the underline */
+
+  line-height: 1.1em;
+  padding-bottom: calc(2.1 * var(--s));
+  background:
+    conic-gradient(from 135deg at top, var(--color-accent) 90deg, #0000 0) left
+      0 bottom var(--s) / calc(2 * var(--s)) var(--s) repeat-x,
+    conic-gradient(from -45deg at bottom, var(--color-accent) 90deg, #0000 0)
+      bottom 0 left var(--s) / calc(2 * var(--s)) var(--s) repeat-x;
+  --_m:
+    linear-gradient(var(--color-base-dark) 0 0) content-box,
+    linear-gradient(var(--color-base-dark) 0 0) 50% / var(--_p, 100%)
+      padding-box no-repeat;
+  -webkit-mask: var(--_m);
+  mask: var(--_m);
 }

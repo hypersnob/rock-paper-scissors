@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Move } from "@/types";
 import { cn, MOVES } from "@/lib/utils";
 import RockImage from "@/icons/Rock.svg";
@@ -36,27 +36,40 @@ const MoveButton: React.FC<React.PropsWithChildren<MoveButtonProps>> = ({
 );
 
 interface MoveSelectorProps {
-  move?: Move;
   updateMove: (move: Move) => void;
+  disabled?: boolean;
 }
 
-const MoveSelector: React.FC<MoveSelectorProps> = ({ updateMove, move }) => {
+const MoveSelector: React.FC<MoveSelectorProps> = ({
+  updateMove,
+  disabled = false,
+}) => {
+  const [activeMove, setActiveMove] = useState<Move | null>(null);
+  const [move, setMove] = useState<Move | null>(null);
+  const [isShuffling, setIsShuffling] = useState(false);
+
   const handleShuffle = () => {
+    if (isShuffling) return; // Prevent multiple shuffles
+
+    setIsShuffling(true);
     const startIndex = Math.floor(Math.random() * MOVES.length);
     const totalSteps = 10 + Math.floor(Math.random() * 5); // Random number of steps between 10-15
     let currentStep = 0;
 
     const animate = () => {
       if (currentStep >= totalSteps) {
-        // Stop at a random position
+        // Set the final move
         const finalIndex = Math.floor(Math.random() * MOVES.length);
-        updateMove(MOVES[finalIndex]);
+        const finalMove = MOVES[finalIndex];
+        setMove(finalMove);
+        setActiveMove(null);
+        setIsShuffling(false);
         return;
       }
 
       // Calculate the current index, wrapping around the array
       const currentIndex = (startIndex + currentStep) % MOVES.length;
-      updateMove(MOVES[currentIndex]);
+      setActiveMove(MOVES[currentIndex]);
       currentStep++;
 
       // Schedule next step with constant delay
@@ -66,24 +79,40 @@ const MoveSelector: React.FC<MoveSelectorProps> = ({ updateMove, move }) => {
     animate();
   };
 
+  useEffect(() => {
+    if (!move) return;
+    updateMove(move);
+  }, [move, updateMove]);
+
+  const isDisabled = disabled || isShuffling;
+
   return (
     <div className="grid grid-cols-2 grid-rows-2 md:grid-cols-4 md:grid-rows-1 gap-6 w-full">
-      <MoveButton onClick={() => updateMove("ROCK")} isActive={move === "ROCK"}>
+      <MoveButton
+        onClick={() => !isDisabled && updateMove("ROCK")}
+        isActive={activeMove === "ROCK" || (!isShuffling && move === "ROCK")}
+      >
         <RockImage className="w-full h-full" />
       </MoveButton>
       <MoveButton
-        isActive={move === "PAPER"}
-        onClick={() => updateMove("PAPER")}
+        onClick={() => !isDisabled && updateMove("PAPER")}
+        isActive={activeMove === "PAPER" || (!isShuffling && move === "PAPER")}
       >
         <PaperImage className="w-full h-full" />
       </MoveButton>
       <MoveButton
-        isActive={move === "SCISSORS"}
-        onClick={() => updateMove("SCISSORS")}
+        onClick={() => !isDisabled && updateMove("SCISSORS")}
+        isActive={
+          activeMove === "SCISSORS" || (!isShuffling && move === "SCISSORS")
+        }
       >
         <ScissorsImage className="w-full h-full" />
       </MoveButton>
-      <MoveButton onClick={handleShuffle} isHighlight>
+      <MoveButton
+        onClick={() => !isDisabled && handleShuffle()}
+        isHighlight
+        isActive={isShuffling}
+      >
         <ShuffleIcon className="w-full h-full" />
       </MoveButton>
     </div>

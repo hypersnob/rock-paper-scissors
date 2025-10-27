@@ -1,13 +1,14 @@
 import React from "react";
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Nunito } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import Header from "@/components/Header";
 import { Toaster } from "sonner";
+import { JazzWrapper } from "@/components/JazzWrapper";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const nunito = Nunito({
+  variable: "--font-nunito",
   subsets: ["latin"],
 });
 
@@ -17,6 +18,7 @@ const description = "Make a move and send a link to your friends to play";
 export const metadata: Metadata = {
   title,
   description,
+  metadataBase: new URL("https://hardrockpaperscissors.app"),
   icons: {
     icon: "/favicon.ico",
   },
@@ -41,12 +43,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-screen">
-      <body className={cn(geistSans.variable, "bg-base-dark h-screen")}>
-        <Header />
-        <main className="max-w-5xl mx-auto h-full flex flex-col justify-center py-10 px-8">
-          {children}
-        </main>
-        <Toaster position="bottom-center" />
+      <body className={cn(nunito.variable, "bg-base-dark h-screen")}>
+        <JazzWrapper>
+          <Header />
+          <main className="max-w-5xl mx-auto h-full flex flex-col justify-center py-10 px-8">
+            {children}
+          </main>
+          <Toaster position="bottom-center" />
+        </JazzWrapper>
       </body>
     </html>
   );

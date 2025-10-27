@@ -1,74 +1,73 @@
 "use client";
 
-import React, { useState, useTransition, use } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
+import { useCoState, useAccount } from "jazz-tools/react";
 import { Move } from "@/types";
 import Loader from "./Loader";
-import { getGameIdWithExpiry, getGameResult, GifCase } from "@/lib/utils";
+import { getGameResult, GifCase } from "@/lib/utils";
 import Button from "./Button";
 import CopyIcon from "@/icons/Copy.svg";
 import MoveSelector from "./MoveSelector";
-import ArrowIcon from "@/icons/Arrow.svg";
 import { toast } from "sonner";
 import ShareIcon from "@/icons/share.svg";
-import { notFound } from "next/navigation";
 import ResultGif from "./ResultGif";
-import { GameResponse } from "@/app/[gameId]/page";
+import { Game } from "@/jazz/schema";
 
 type GameLoaderProps = {
-  gamePromise: Promise<GameResponse>;
+  gameId: string;
 };
 
-async function playGame(id: string, move: Move) {
-  const response = await fetch(`/api/play/${id}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ move }),
-  });
+function calculateWinner(
+  hostMove: Move,
+  playerMove: Move,
+): "HOST" | "PLAYER" | "DRAW" {
+  if (hostMove === playerMove) return "DRAW";
 
-  if (!response.ok) {
-    return notFound();
-  }
-
-  const data = await response.json();
-  return { game: data };
-}
-
-const GameLoader: React.FC<GameLoaderProps> = ({ gamePromise }) => {
-  const [isPending, startTransition] = useTransition();
-  const [move, setMove] = useState<Move>();
-  const router = useRouter();
-
-  const { game, error } = use(gamePromise);
-
-  const view =
-    error || !game
-      ? "PLAYER"
-      : getGameIdWithExpiry(game.id)
-        ? "HOST"
-        : "PLAYER";
-
-  const handlePlay = () => {
-    if (!move || !game) {
-      return;
-    }
-
-    startTransition(async () => {
-      playGame(game.id, move).then((data) => {
-        if (data.game) {
-          router.refresh();
-        }
-      });
-    });
+  const rules: Record<Move, Move> = {
+    ROCK: "SCISSORS",
+    PAPER: "ROCK",
+    SCISSORS: "PAPER",
   };
 
-  if (error) {
-    notFound();
+  return rules[hostMove] === playerMove ? "HOST" : "PLAYER";
+}
+
+const GameLoader: React.FC<GameLoaderProps> = ({ gameId }) => {
+  const game = useCoState(Game, gameId);
+  const { me } = useAccount();
+
+  // Determine if current user is the host
+  const isHost = !!(
+    game?.hostAccountId &&
+    me &&
+    game.hostAccountId === me.$jazz.id
+  );
+
+  const view = !game ? "PLAYER" : isHost ? "HOST" : "PLAYER";
+
+  // Calculate winner when both moves are present
+  useEffect(() => {
+    if (game?.hostMove && game?.playerMove && !game.winner) {
+      const winner = calculateWinner(game.hostMove, game.playerMove);
+      game.$jazz.set("winner", winner);
+      game.$jazz.set("dateCompleted", new Date().toISOString());
+    }
+  }, [game]);
+
+  const handlePlay = (selectedMove: Move) => {
+    if (!game) return;
+    game.$jazz.set("playerMove", selectedMove);
+  };
+
+  if (!game) {
+    return (
+      <div className="flex justify-center">
+        <Loader size="big" />
+      </div>
+    );
   }
 
-  if (game && game.winner) {
+  if (game.winner) {
     const { message, emoji } = getGameResult(game.winner, view);
     const result: GifCase =
       game.winner === "DRAW"
@@ -94,7 +93,7 @@ const GameLoader: React.FC<GameLoaderProps> = ({ gamePromise }) => {
   }
 
   if (view === "HOST") {
-    const url = `${window.location.origin}/${game?.id}`;
+    const url = `${window.location.origin}/${gameId}`;
 
     return (
       <div className="text-base-light text-center">
@@ -128,12 +127,6 @@ const GameLoader: React.FC<GameLoaderProps> = ({ gamePromise }) => {
             </button>
           )}
         </div>
-        <p className="text-base-light text-xl mb-4">Allready sent?</p>
-        <div className="flex justify-center mb-6">
-          <Button variant="secondary" onClick={() => router.refresh()}>
-            Refresh
-          </Button>
-        </div>
         <div className="flex justify-center">
           <Button href="/">New game</Button>
         </div>
@@ -143,19 +136,29 @@ const GameLoader: React.FC<GameLoaderProps> = ({ gamePromise }) => {
 
   // Ensure view is PLAYER before rendering player UI
   if (view === "PLAYER") {
+    const playerMove = game.playerMove;
+
     return (
       <div className="text-base-light text-center">
         <h1 className="text-3xl md:text-5xl font-bold mb-6 md:mb-8">
           Let&apos;s play!
         </h1>
         <p className="text-xl mb-4">Make your choice and get game result.</p>
-        <MoveSelector move={move} updateMove={setMove} />
-        <div className="mt-6 md:mt-8">
-          <Button disabled={!move} onClick={handlePlay}>
-            <span className="flex items-center gap-2">Play</span>
-            {isPending ? <Loader /> : <ArrowIcon className="w-6 h-6" />}
-          </Button>
-        </div>
+        <MoveSelector
+          updateMove={(newMove) => {
+            if (!playerMove) {
+              handlePlay(newMove);
+            }
+          }}
+          disabled={!!playerMove}
+        />
+        {playerMove && (
+          <div className="mt-6 md:mt-8">
+            <p className="text-base-light text-xl mb-4">
+              Waiting for opponent...
+            </p>
+          </div>
+        )}
       </div>
     );
   }
